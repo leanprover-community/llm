@@ -41,7 +41,8 @@ def gpt4all_LLM (model : String) (modelHome : Option FilePath := none) : IO LLM 
         -- TODO pass cfg.maxTokens
         -- Hacky: `pygpt4all` pollutes `stdout`, so our script prints on `stderr`.
         -- See https://github.com/nomic-ai/pygpt4all/issues/100
-        let (_, _, result) ← runCmd' (toString main) #[toString modelPath, cfg.stopToken.getD ""] false input
+        let (_, _, result) ← runCmd' (toString main) #[toString modelPath, cfg.stopToken.getD ""]
+          false input
         return result.stripSuffix' "done" |>.trim }
 
 /-- Instantiate a chat bot running locally using the pygpt4all library. -/
