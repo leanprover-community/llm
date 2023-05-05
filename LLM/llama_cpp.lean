@@ -50,7 +50,7 @@ def llama_cpp_LLM (path : FilePath) (model : String) (modelHome : Option FilePat
           | some m => #["-n", toString m]
           | none => #[]
       -- TODO can we delete `promptFile`?
-      return result.trim.stripPrefix input }
+      return result.trim.stripPrefix' input }
 
 /-- Instantiate a chat bot running locally using the llama.cpp library. -/
 def llama_cpp (model : String := "7B/ggml-model-q4_0.bin"): IO ChatBot := do

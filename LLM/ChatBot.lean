@@ -45,7 +45,7 @@ def LLM.asChatBot (L : LLM) (userCue : String := "User") (assistantCue : String 
         | .assistant => assistantCue ++ ": " ++ content)
         ++ "\n" ++ assistantCue ++ ": "
       let result ← L.run (cfg := { stopToken := userCue ++ ":" }) input
-      return result.trim.stripSuffix (userCue ++ ":") |>.trim
+      return result.trim.stripSuffix' (userCue ++ ":") |>.trim
 
 /-- Locate a model file, searching a list of paths, as well as `$LLM_MODELS` and `$HOME/.models`. -/
 def findModel (model : String) (searchPaths : List FilePath) : IO FilePath := do

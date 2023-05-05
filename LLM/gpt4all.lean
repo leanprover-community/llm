@@ -42,7 +42,7 @@ def gpt4all_LLM (model : String) (modelHome : Option FilePath := none) : IO LLM 
         -- Hacky: `pygpt4all` pollutes `stdout`, so our script prints on `stderr`.
         -- See https://github.com/nomic-ai/pygpt4all/issues/100
         let (_, _, result) ← runCmd' (toString main) #[toString modelPath, cfg.stopToken.getD ""] false input
-        return result.stripSuffix "done" |>.trim }
+        return result.stripSuffix' "done" |>.trim }
 
 /-- Instantiate a chat bot running locally using the pygpt4all library. -/
 def gpt4all (model : String := "ggml-gpt4all-j-v1.3-groovy.bin") : IO ChatBot := do
