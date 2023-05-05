@@ -20,9 +20,16 @@ def gpt4all_instructions :=
   Also install the gpt4all python bindings via `pip3 install pygpt4all`.
 "
 
+/-- Find the directory containing the LLM package. -/
+def llmRoot : IO FilePath := do
+  if ← FilePath.mk "LLM" |>.pathExists then
+    return "."
+  else
+    return "lake-packages" / "llm"
+
 /-- Instantiate an LLM running locally using the pygpt4all library. -/
 def gpt4all_LLM (model : String) (modelHome : Option FilePath := none) : IO LLM := do
-  let main := "LLM/pygpt4all-prompt.py"
+  let main := (← llmRoot) / "LLM/pygpt4all-prompt.py"
   let modelPath ← try
     findModel model modelHome.toList
   catch e =>
@@ -34,13 +41,13 @@ def gpt4all_LLM (model : String) (modelHome : Option FilePath := none) : IO LLM 
         -- TODO pass cfg.maxTokens
         -- Hacky: `pygpt4all` pollutes `stdout`, so our script prints on `stderr`.
         -- See https://github.com/nomic-ai/pygpt4all/issues/100
-        let (_, _, result) ← runCmd' main #[toString modelPath, cfg.stopToken.getD ""] false input
+        let (_, _, result) ← runCmd' (toString main) #[toString modelPath, cfg.stopToken.getD ""] false input
         return result.stripSuffix "done" |>.trim }
 
 /-- Instantiate a chat bot running locally using the pygpt4all library. -/
 def gpt4all (model : String := "ggml-gpt4all-j-v1.3-groovy.bin") : IO ChatBot := do
   try
-    _ ← runCmd "LLM/pygpt4all-noop.py" #[]
+    _ ← runCmd (toString <| (← llmRoot) / "LLM/pygpt4all-noop.py") #[]
   catch e =>
     IO.println "Could not find the pygpt4all library."
     IO.println "Try running `pip3 install pygpt4all`."
