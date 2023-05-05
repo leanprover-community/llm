@@ -1,0 +1,100 @@
+on:
+  push:
+    branches-ignore:
+      # ignore tmp branches used by bors
+      - 'staging.tmp*'
+      - 'trying.tmp*'
+      - 'staging*.tmp'
+      - 'nolints'
+      # ignore staging branch used by bors, this is handled by bors.yml
+      - 'staging'
+
+name: continuous integration
+
+jobs:
+  # Cancels previous runs of jobs in this file
+  cancel:
+    if: github.repository == 'leanprover-community/llm'
+    name: 'Cancel Previous Runs (CI)'
+    runs-on: ubuntu-latest
+    # timeout-minutes: 3
+    steps:
+      - uses: styfle/cancel-workflow-action@0.11.0
+        with:
+          all_but_latest: true
+          access_token: ${{ github.token }}
+
+  style_lint:
+    if: github.repository == 'leanprover-community/llm'
+    name: Lint style
+    runs-on: ubuntu-latest
+    steps:
+      - name: cleanup
+        run: |
+          find . -name . -o -prune -exec rm -rf -- {} +
+
+      - uses: actions/checkout@v3
+
+      - name: install Python
+        if: ${{ 'ubuntu-latest' == 'ubuntu-latest' }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+
+      - name: lint
+        run: |
+          ./scripts/lint-style.sh
+
+  check_imported:
+    if: github.repository == 'leanprover-community/llm'
+    name: Check all files imported
+    runs-on: ubuntu-latest
+    steps:
+      - name: cleanup
+        run: |
+          find . -name . -o -prune -exec rm -rf -- {} +
+
+      - uses: actions/checkout@v3
+
+      - name: update LLM.lean
+        run: |
+          find LLM -name "*.lean" | LC_ALL=C sort | sed 's/\.lean//;s,/,.,g;s/^/import /' > LLM.lean
+
+      - name: check that all files are imported
+        run: git diff --exit-code
+
+  build:
+    if: github.repository == 'leanprover-community/llm'
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: cleanup
+        run: |
+          find . -name . -o -prune -exec rm -rf -- {} +
+
+      - name: install elan
+        run: |
+          set -o pipefail
+          curl -sSfL https://github.com/leanprover/elan/releases/download/v1.4.2/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
+          ./elan-init -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - uses: actions/checkout@v3
+
+      # We update `LLM.lean` as a convenience here,
+      # but verify that this didn't change anything in the `check_imported` job.
+      - name: update LLM.lean
+        run: |
+          find LLM -name "*.lean" | LC_ALL=C sort | sed 's/\.lean//;s,/,.,g;s/^/import /' > LLM.lean
+
+      - name: build LLM
+        uses: liskin/gh-problem-matcher-wrap@v2
+        with:
+          linters: gcc
+          run: env LEAN_ABORT_ON_PANIC=1 lake build
+
+      - name: test LLM
+        run: make -j 8 test
+
+      - name: lint LLM
+        run: env LEAN_ABORT_ON_PANIC=1 make lint

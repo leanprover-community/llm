@@ -1,0 +1,13 @@
+{
+  "name": "leanprover-community/LLM dev container",
+
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+
+  "customizations": {
+    "vscode" : {
+      "extensions" : [ "leanprover.lean4" ]
+    }
+  }
+}
