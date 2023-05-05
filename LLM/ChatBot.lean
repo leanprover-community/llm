@@ -32,12 +32,12 @@ structure LLMConfig where
   maxTokens : Option Nat := none
 
 /-- Abstract interface for an LLM. -/
-structure LLM where
+structure LanguageModel where
   run (input : String) (cfg : LLMConfig := {}) : IO String
 
 /-- Treat an LLM as a chat bot, by concatenating the conversation so far with prompts. -/
-def LLM.asChatBot (L : LLM) (userCue : String := "User") (assistantCue : String := "Assistant") :
-    ChatBot where
+def LanguageModel.asChatBot (L : LanguageModel)
+    (userCue : String := "User") (assistantCue : String := "Assistant") : ChatBot where
   sendMessages msgs := do
       let input := ("\n".intercalate <| msgs.map fun ⟨role, content⟩ => match role with
         | .system => content
@@ -55,4 +55,3 @@ def findModel (model : String) (searchPaths : List FilePath) : IO FilePath := do
   match ← (searchPaths.map fun p => p / model).findM? (fun p => p.pathExists) with
   | some p => return p
   | none => throw <| IO.userError s!"Could not find {model} in any of the paths: {searchPaths}"
-

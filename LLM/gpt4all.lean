@@ -28,7 +28,8 @@ def llmRoot : IO FilePath := do
     return "lake-packages" / "llm"
 
 /-- Instantiate an LLM running locally using the pygpt4all library. -/
-def gpt4all_LLM (model : String) (modelHome : Option FilePath := none) : IO LLM := do
+def gpt4all_LanguageModel (model : String) (modelHome : Option FilePath := none) :
+    IO LanguageModel := do
   let main := (← llmRoot) / "LLM/pygpt4all-prompt.py"
   let modelPath ← try
     findModel model modelHome.toList
@@ -53,4 +54,4 @@ def gpt4all (model : String := "ggml-gpt4all-j-v1.3-groovy.bin") : IO ChatBot :=
     IO.println "Could not find the pygpt4all library."
     IO.println "Try running `pip3 install pygpt4all`."
     throw e
-  return (← gpt4all_LLM model).asChatBot
+  return (← gpt4all_LanguageModel model).asChatBot

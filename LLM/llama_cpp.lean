@@ -26,8 +26,8 @@ def llama_cpp_instructions : String :=
 "
 
 /-- Instantiate an LLM running locally using the llama.cpp library. -/
-def llama_cpp_LLM (path : FilePath) (model : String) (modelHome : Option FilePath := none) :
-    IO LLM := do
+def llama_cpp_LanguageModel (path : FilePath) (model : String)
+    (modelHome : Option FilePath := none) : IO LanguageModel := do
   let main := path / "main"
   if ! (← main.pathExists) then
     throw <| IO.userError <| "Could not find `llama.cpp` executable.\n" ++ llama_cpp_instructions
@@ -59,5 +59,5 @@ def llama_cpp (model : String := "7B/ggml-model-q4_0.bin"): IO ChatBot := do
   | none => throw <| IO.userError <|
       "Please set the environment variable LLAMA_CPP_HOME to point to your llama.cpp directory.\n"
         ++ llama_cpp_instructions
-  let llm ← llama_cpp_LLM path model
+  let llm ← llama_cpp_LanguageModel path model
   return llm.asChatBot
