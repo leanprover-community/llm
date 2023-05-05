@@ -1,6 +1,5 @@
 import LLM.ChatBot
 import LLM.FindChatBot
-import LLM.Formalize
 import LLM.GPT.API
 import LLM.GPT.Chat
 import LLM.GPT.Json
