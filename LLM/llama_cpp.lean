@@ -4,12 +4,14 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Morrison
 -/
 import LLM.ChatBot
+import Std.Lean.IO.Process
 
 /-!
 # Interface for `llama.cpp`.
 -/
 
 open System (FilePath)
+open IO.Process
 
 namespace LLM
 
@@ -41,7 +43,7 @@ def llama_cpp_LanguageModel (path : FilePath) (model : String)
       -- so we use a temporary file.
       let promptFile := path / "prompts" / "lean-prompt.txt"
       IO.FS.writeFile promptFile input
-      let result ← runCmd (toString main) <|
+      let result ← runCmdWithInput (toString main) <|
         #["-m", toString modelPath, "-f", toString promptFile]
           ++ match cfg.stopToken with
           | some t => #["-r", t]

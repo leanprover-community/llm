@@ -4,12 +4,14 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Morrison
 -/
 import LLM.ChatBot
+import Std
 
 /-!
 # Interfacoe for `gpt4all`.
 -/
 
 open System (FilePath)
+open IO.Process
 
 namespace LLM
 
@@ -42,14 +44,14 @@ def gpt4all_LanguageModel (model : String) (modelHome : Option FilePath := none)
         -- TODO pass cfg.maxTokens
         -- Hacky: `pygpt4all` pollutes `stdout`, so our script prints on `stderr`.
         -- See https://github.com/nomic-ai/pygpt4all/issues/100
-        let (_, _, result) ← runCmd' (toString main) #[toString modelPath, cfg.stopToken.getD ""]
-          false input
+        let ⟨_, _, result⟩ ← runCmdWithInput' (toString main) #[toString modelPath, cfg.stopToken.getD ""]
+          input (throwFailure := false)
         return result.stripSuffix' "done" |>.trim }
 
 /-- Instantiate a chat bot running locally using the pygpt4all library. -/
 def gpt4all (model : String := "ggml-gpt4all-j-v1.3-groovy.bin") : IO ChatBot := do
   try
-    _ ← runCmd (toString <| (← llmRoot) / "LLM/pygpt4all-noop.py") #[]
+    _ ← runCmdWithInput (toString <| (← llmRoot) / "LLM/pygpt4all-noop.py") #[]
   catch e =>
     IO.println "Could not find the pygpt4all library."
     IO.println "Try running `pip3 install pygpt4all`."

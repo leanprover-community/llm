@@ -6,7 +6,6 @@ Authors: Scott Morrison
 import Std.Data.Option.Basic
 import LLM.String
 import LLM.GPT.Json
-import LLM.IO.runCmd
 
 /-!
 # Abstract interfaces for large language models and chat bots.
