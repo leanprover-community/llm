@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Morrison
 -/
 import LLM.ChatBot
-import Std
+import Batteries.Lean.IO.Process
 
 /-!
 # Interfacoe for `gpt4all`.
