@@ -12,4 +12,5 @@ lean_exe runLinter where
   root := `scripts.runLinter
   supportInterpreter := true
 
-require std from git "https://github.com/leanprover/std4" @ "main"
+require batteries from
+    git "https://github.com/leanprover-community/batteries" @ "main"
